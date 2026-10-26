@@ -1,12 +1,10 @@
-@props(['active' => false, 'label' => ''])
+@props(['active' => false, 'label' => '', 'href' => '#'])
 
-<button
+<a href="{{ $href }}" @if ($active) aria-current="true" @endif
     {{ $attributes->merge([
         'class' =>
-            'btn btn-sm rounded-full px-6 normal-case font-medium transition-all ' .
-            ($active
-                ? '!bg-blue-800 !text-white hover:!bg-blue-800'
-                : 'bg-white border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white'),
+            'btn btn-sm shrink-0 rounded-full px-4 font-semibold ' .
+            ($active ? 'btn-primary' : 'border-base-300 bg-base-100 hover:border-primary hover:text-primary'),
     ]) }}>
     {{ $label }}
-</button>
+</a>

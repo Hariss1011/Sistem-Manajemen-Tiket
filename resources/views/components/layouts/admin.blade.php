@@ -1,17 +1,22 @@
 <!DOCTYPE html>
 <html lang="id">
 
+<html lang="id" data-theme="bengtix">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title ?? 'Admin Dashboard' }}</title>
+    <title>{{ ($title ?? 'Panel admin') . ' · BengTix' }}</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700,800&display=swap"
+        rel="stylesheet" />
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body>
-    <div class="drawer lg:drawer-open w-full min-h-screen bg-gray-50">
+<body class="font-sans">
+    <div class="drawer lg:drawer-open w-full min-h-screen bg-base-200">
         <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
         <div class="drawer-content">
             <!-- Navbar -->
@@ -35,14 +40,6 @@
         @include('components.admin.sidebar')
     </div>
 
-    <footer class="bg-light text-center py-3">
-        <div class="container">
-            <p>© {{ date('Y') }} MyLaravelApp. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    {{-- Section untuk script tambahan --}}
     @stack('scripts')
 </body>
 

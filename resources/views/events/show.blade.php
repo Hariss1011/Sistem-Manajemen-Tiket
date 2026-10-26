@@ -1,323 +1,221 @@
-<x-layouts.app>
-    <section class="max-w-7xl mx-auto py-12 px-6">
-        <nav class="mb-6">
-            <div class="breadcrumbs">
+@php
+    $tgl = $event->tanggal_waktu->copy()->locale('id');
+    $tikets = $event->tikets->sortBy('harga')->values();
+    $ticketData = $tikets
+        ->map(
+            fn($t) => [
+                'id' => $t->id,
+                'tipe' => $t->tipeTiket->nama,
+                'price' => (float) $t->harga,
+                'stock' => (int) $t->stok,
+                'max' => min((int) $t->stok, 10),
+            ],
+        )
+        ->values();
+    $totalStok = $tikets->sum('stok');
+    $bisaBeli = !$event->is_past && $totalStok > 0;
+@endphp
+
+<x-layouts.app :title="$event->judul">
+    <div x-data="checkout(@js($ticketData), @js(route('orders.store')), {{ $event->id }})" class="pb-28 lg:pb-0">
+        <section class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+            <nav class="breadcrumbs text-sm" aria-label="Navigasi">
                 <ul>
-                    <li><a href="{{ route('home') }}" class="link link-neutral">Beranda</a></li>
-                    <li><a href="#" class="link link-neutral">Event</a></li>
-                    <li>{{ $event->judul }}</li>
+                    <li><a href="{{ route('home') }}">Beranda</a></li>
+                    @if ($event->kategori)
+                        <li><a
+                                href="{{ route('home', ['kategori' => $event->kategori_id]) }}#jelajah">{{ $event->kategori->nama }}</a>
+                        </li>
+                    @endif
+                    <li class="truncate">{{ $event->judul }}</li>
                 </ul>
-            </div>
-        </nav>
+            </nav>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Left / Main area -->
-            <div class="lg:col-span-2">
-                <div class="card bg-base-100 shadow">
-                    <figure>
-                        <img src="{{ asset('images/events/' . $event->gambar) }}" alt="{{ $event->judul }}"
-                            class="w-full max-w-md mx-auto rounded-lg">
-                    </figure>
-                    <div class="card-body">
-                        <div class="flex justify-between items-start gap-4">
+            <div class="mt-4 grid gap-8 lg:grid-cols-[1fr_22rem]">
+                <div>
+                    <div class="relative aspect-[16/8] overflow-hidden rounded-box bg-base-300">
+                        <img src="{{ $event->gambar_url }}" alt="Poster {{ $event->judul }}"
+                            onerror="this.onerror=null;this.src='{{ asset('images/placeholder-event.svg') }}'"
+                            class="size-full object-cover {{ $event->is_past ? 'grayscale' : '' }}">
+                    </div>
+
+                    <div class="mt-6 flex flex-wrap items-center gap-2">
+                        @if ($event->kategori)
+                            <span class="badge badge-primary">{{ $event->kategori->nama }}</span>
+                        @endif
+                        @if ($event->is_past)
+                            <span class="badge badge-neutral">Acara selesai</span>
+                        @elseif ($totalStok <= 0 && $tikets->isNotEmpty())
+                            <span class="badge badge-neutral">Tiket habis</span>
+                        @endif
+                    </div>
+
+                    <h1 class="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-balance sm:text-4xl">
+                        {{ $event->judul }}</h1>
+
+                    <dl class="mt-6 grid gap-4 rounded-box border border-base-300 bg-base-100 p-5 sm:grid-cols-3">
+                        <div class="flex gap-3">
+                            <x-icon name="calendar" class="mt-0.5 size-5 shrink-0 text-secondary" />
                             <div>
-                                <h1 class="text-3xl font-extrabold">{{ $event->judul }}</h1>
-                                <p class="text-sm text-gray-500 mt-1">
-                                    {{ \Carbon\Carbon::parse($event->tanggal_waktu)->locale('id')->translatedFormat('d F Y, H:i') }}
-                                    • 📍
-                                    {{ $event->lokasi->nama_lokasi }}
-                                </p>
-
-                                <div class="mt-3 flex gap-2 items-center">
-                                    <span
-                                        class="badge badge-primary">{{ $event->kategori?->nama ?? 'Tanpa Kategori' }}</span>
-                                    <span class="badge">{{ $event->user?->name ?? 'Penyelenggara' }}</span>
-                                </div>
+                                <dt class="text-xs text-base-content/60">Tanggal</dt>
+                                <dd class="font-semibold">{{ $tgl->translatedFormat('l, d F Y') }}</dd>
                             </div>
-
                         </div>
+                        <div class="flex gap-3">
+                            <x-icon name="clock" class="mt-0.5 size-5 shrink-0 text-secondary" />
+                            <div>
+                                <dt class="text-xs text-base-content/60">Waktu</dt>
+                                <dd class="font-semibold">{{ $tgl->translatedFormat('H.i') }} WIB</dd>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <x-icon name="pin" class="mt-0.5 size-5 shrink-0 text-secondary" />
+                            <div>
+                                <dt class="text-xs text-base-content/60">Lokasi</dt>
+                                <dd class="font-semibold">{{ $event->lokasi?->nama_lokasi }}</dd>
+                            </div>
+                        </div>
+                    </dl>
 
-                        <p class="mt-4 text-gray-700 leading-relaxed">{{ $event->deskripsi }}</p>
+                    <h2 class="mt-10 text-xl font-extrabold">Tentang acara</h2>
+                    <p class="mt-3 max-w-prose whitespace-pre-line leading-relaxed text-base-content/80">
+                        {{ $event->deskripsi }}</p>
+                    @if ($event->user)
+                        <p class="mt-4 text-sm text-base-content/60">Diselenggarakan oleh {{ $event->user->name }}</p>
+                    @endif
 
-                        <div class="divider"></div>
+                    <h2 id="tiket" class="mt-10 scroll-mt-24 text-xl font-extrabold">Pilih tiket</h2>
 
-                        <h3 class="text-xl font-bold">Pilih Tiket</h3>
-
-                        <div class="mt-4 space-y-4">
-                            @forelse($event->tikets as $tiket)
-                                <div class="card card-side shadow-sm p-4 items-center">
-                                    <div class="flex-1">
-                                        <h4 class="font-bold">{{ $tiket->tipeTiket->nama }}</h4>
-                                        <p class="text-sm text-gray-500">Stok: <span
-                                                id="stock-{{ $tiket->id }}">{{ $tiket->stok }}</span></p>
-                                        <p class="text-sm mt-2">{{ $tiket->keterangan ?? '' }}</p>
-                                    </div>
-
-                                    <div class="w-44 text-right">
-                                        <div class="text-lg font-bold">
-                                            {{ $tiket->harga ? 'Rp ' . number_format($tiket->harga, 0, ',', '.') : 'Gratis' }}
-                                        </div>
-
-                                        <div class="mt-3 flex items-center justify-end gap-2">
-                                            <button type="button" class="btn btn-sm btn-outline" data-action="dec"
-                                                data-id="{{ $tiket->id }}" aria-label="Kurangi satu">−</button>
-                                            <input id="qty-{{ $tiket->id }}" type="number" min="0"
-                                                max="{{ $tiket->stok }}" value="0"
-                                                class="input input-bordered w-16 text-center"
-                                                data-id="{{ $tiket->id }}" />
-                                            <button type="button" class="btn btn-sm btn-outline" data-action="inc"
-                                                data-id="{{ $tiket->id }}" aria-label="Tambah satu">+</button>
-                                        </div>
-
-                                        <div class="text-sm text-gray-500 mt-2">Subtotal: <span
-                                                id="subtotal-{{ $tiket->id }}">Rp 0</span>
-                                        </div>
-                                    </div>
+                    <div class="mt-4 space-y-3">
+                        @forelse ($tikets as $tiket)
+                            <div class="flex items-center justify-between gap-4 rounded-box border bg-base-100 p-4"
+                                :class="qty[{{ $tiket->id }}] > 0 ? 'border-primary ring-1 ring-primary' : 'border-base-300'">
+                                <div class="min-w-0">
+                                    <h3 class="font-bold">{{ $tiket->tipeTiket->nama }}</h3>
+                                    <p class="mt-0.5 text-lg font-extrabold text-primary">
+                                        {{ (float) $tiket->harga === 0.0 ? 'Gratis' : 'Rp ' . number_format($tiket->harga, 0, ',', '.') }}
+                                    </p>
+                                    <p
+                                        class="mt-0.5 text-xs {{ $tiket->stok <= 0 ? 'font-semibold text-error' : ($tiket->stok <= 20 ? 'font-semibold text-warning' : 'text-base-content/60') }}">
+                                        {{ $tiket->stok <= 0 ? 'Habis' : ($tiket->stok <= 20 ? 'Tersisa ' . $tiket->stok : 'Tersedia') }}
+                                    </p>
                                 </div>
-                            @empty
-                                <div class="alert alert-info">Tiket belum tersedia untuk acara ini.</div>
-                            @endforelse
+
+                                @if ($bisaBeli && $tiket->stok > 0)
+                                    <div class="flex items-center gap-1" role="group"
+                                        aria-label="Jumlah tiket {{ $tiket->tipeTiket->nama }}">
+                                        <button type="button" class="btn btn-circle btn-sm btn-outline"
+                                            @click="step(tickets.find(t => t.id === {{ $tiket->id }}), -1)"
+                                            :disabled="qty[{{ $tiket->id }}] === 0" aria-label="Kurangi satu tiket">
+                                            <x-icon name="minus" />
+                                        </button>
+                                        <output class="w-8 text-center text-lg font-bold tabular-nums"
+                                            x-text="qty[{{ $tiket->id }}]" aria-live="polite">0</output>
+                                        <button type="button" class="btn btn-circle btn-sm btn-primary"
+                                            @click="step(tickets.find(t => t.id === {{ $tiket->id }}), 1)"
+                                            :disabled="qty[{{ $tiket->id }}] >= {{ min($tiket->stok, 10) }}"
+                                            aria-label="Tambah satu tiket">
+                                            <x-icon name="plus" />
+                                        </button>
+                                    </div>
+                                @endif
+                            </div>
+                        @empty
+                            <div class="rounded-box border border-dashed border-base-300 bg-base-100 p-6 text-center">
+                                <p class="font-bold">Tiket belum dibuka.</p>
+                                <p class="text-sm text-base-content/70">Cek lagi nanti, penyelenggara belum menambahkan
+                                    tiket.</p>
+                            </div>
+                        @endforelse
+                    </div>
+                    @if ($bisaBeli)
+                        <p class="mt-3 text-xs text-base-content/60">Maksimal 10 tiket per jenis dalam satu pesanan.</p>
+                    @endif
+                </div>
+
+                {{-- Ringkasan (desktop) --}}
+                <aside class="hidden lg:block">
+                    <div class="sticky top-24 rounded-box border border-base-300 bg-base-100 p-5">
+                        <h2 class="text-lg font-extrabold">Ringkasan pesanan</h2>
+
+                        <ul class="mt-4 min-h-12 space-y-2 text-sm">
+                            <template x-for="l in lines" :key="l.id">
+                                <li class="flex justify-between gap-3">
+                                    <span><span x-text="l.tipe"></span> × <span x-text="l.qty"></span></span>
+                                    <span class="font-semibold" x-text="rupiah(l.subtotal)"></span>
+                                </li>
+                            </template>
+                            <li x-show="count === 0" class="text-base-content/60">Pilih jumlah tiket di sebelah kiri.
+                            </li>
+                        </ul>
+
+                        <div class="my-4 border-t border-dashed border-base-300"></div>
+
+                        <div class="flex items-center justify-between">
+                            <span class="text-base-content/70">Total</span>
+                            <span class="text-2xl font-extrabold" x-text="rupiah(total)">Rp 0</span>
                         </div>
 
+                        @include('events.partials.cta', ['bisaBeli' => $bisaBeli, 'event' => $event])
                     </div>
+                </aside>
+            </div>
+        </section>
+
+        {{-- Bar bawah (mobile) --}}
+        <div class="fixed inset-x-0 bottom-0 z-30 border-t border-base-300 bg-base-100 p-4 lg:hidden">
+            <div class="mx-auto flex max-w-xl items-center gap-4">
+                <div class="leading-tight">
+                    <p class="text-xs text-base-content/60"><span x-text="count"></span> tiket</p>
+                    <p class="text-lg font-extrabold" x-text="rupiah(total)">Rp 0</p>
+                </div>
+                <div class="flex-1">
+                    @include('events.partials.cta', [
+                        'bisaBeli' => $bisaBeli,
+                        'event' => $event,
+                        'compact' => true,
+                    ])
                 </div>
             </div>
-
-            <!-- Right / Summary -->
-            <aside class="lg:col-span-1">
-                <div class="card sticky top-24 p-4 bg-base-100 shadow">
-                    <h4 class="font-bold text-lg">Ringkasan Pembelian</h4>
-
-                    <div class="mt-4">
-                        <div class="flex justify-between text-sm text-gray-500"><span>Item</span><span
-                                id="summaryItems">0</span>
-                        </div>
-                        <div class="flex justify-between text-xl font-bold mt-1"><span>Total</span><span
-                                id="summaryTotal">Rp
-                                0</span></div>
-                    </div>
-
-                    <div class="divider"></div>
-
-                    <div id="selectedList" class="space-y-2 text-sm text-gray-700">
-                        <p class="text-gray-500">Belum ada tiket dipilih</p>
-                    </div>
-
-                    @auth
-                        <button id="checkoutButton" class="btn btn-primary !bg-blue-900 text-white btn-block mt-6"
-                            onclick="openCheckout()" disabled>Checkout</button>
-                    @else
-                        <a href="{{ route('login') }}" class="btn btn-primary btn-block mt-6 text-white">Login untuk
-                            Checkout</a>
-                    @endauth
-
-                </div>
-            </aside>
         </div>
 
-        <!-- Checkout Modal -->
-        <dialog id="checkout_modal" class="modal">
-            <form method="dialog" class="modal-box">
-                <h3 class="font-bold text-lg">Konfirmasi Pembelian</h3>
-                <div class="mt-4 space-y-2 text-sm">
-                    <div id="modalItems">
-                        <p class="text-gray-500">Belum ada item.</p>
-                    </div>
+        {{-- Konfirmasi --}}
+        <dialog x-ref="dlg" x-effect="open ? $refs.dlg.showModal() : $refs.dlg.close()" @close="open = false"
+            class="modal modal-bottom sm:modal-middle">
+            <div class="modal-box">
+                <h3 class="text-lg font-extrabold">Konfirmasi pesanan</h3>
+                <p class="mt-1 text-sm text-base-content/70">{{ $event->judul }}</p>
 
-                    <div class="divider"></div>
-                    <div class="flex justify-between items-center">
-                        <span class="font-bold">Total</span>
-                        <span class="font-bold text-lg" id="modalTotal">Rp 0</span>
-                    </div>
+                <ul class="mt-5 space-y-2 text-sm">
+                    <template x-for="l in lines" :key="l.id">
+                        <li class="flex justify-between gap-3">
+                            <span><span x-text="l.tipe"></span> × <span x-text="l.qty"></span></span>
+                            <span class="font-semibold" x-text="rupiah(l.subtotal)"></span>
+                        </li>
+                    </template>
+                </ul>
+
+                <div class="my-4 border-t border-dashed border-base-300"></div>
+                <div class="flex items-center justify-between">
+                    <span class="font-semibold">Total</span>
+                    <span class="text-xl font-extrabold" x-text="rupiah(total)"></span>
+                </div>
+
+                <div x-show="error" x-cloak class="alert alert-error mt-4 text-sm" role="alert">
+                    <span x-text="error"></span>
                 </div>
 
                 <div class="modal-action">
-                    <button class="btn">Tutup</button>
-                    <button type="button" class="btn btn-primary px-4 !bg-blue-900 text-white"
-                        id="confirmCheckout">Konfirmasi</button>
+                    <button type="button" class="btn btn-ghost" @click="open = false"
+                        :disabled="loading">Batal</button>
+                    <button type="button" class="btn btn-primary" @click="submit()"
+                        :disabled="loading || count === 0">
+                        <span x-show="loading" class="loading loading-spinner loading-sm"></span>
+                        <span x-text="loading ? 'Memproses' : 'Konfirmasi pesanan'"></span>
+                    </button>
                 </div>
-            </form>
+            </div>
+            <form method="dialog" class="modal-backdrop"><button aria-label="Tutup">tutup</button></form>
         </dialog>
-
-    </section>
-
-    <script>
-        (function() {
-            // Helper to format Indonesian currency
-            const formatRupiah = (value) => {
-                return 'Rp ' + Number(value).toLocaleString('id-ID');
-            }
-
-            const tickets = {
-                @foreach ($event->tikets as $tiket)
-                    {{ $tiket->id }}: {
-                        id: {{ $tiket->id }},
-                        price: {{ $tiket->harga ?? 0 }},
-                        stock: {{ $tiket->stok }},
-                        tipe: "{{ e($tiket->tipeTiket->nama) }}"
-                    },
-                @endforeach
-            };
-
-            const summaryItemsEl = document.getElementById('summaryItems');
-            const summaryTotalEl = document.getElementById('summaryTotal');
-            const selectedListEl = document.getElementById('selectedList');
-            const checkoutButton = document.getElementById('checkoutButton');
-
-            function updateSummary() {
-                let totalQty = 0;
-                let totalPrice = 0;
-                let selectedHtml = '';
-
-                Object.values(tickets).forEach(t => {
-                    const qtyInput = document.getElementById('qty-' + t.id);
-                    if (!qtyInput) return;
-                    const qty = Number(qtyInput.value || 0);
-                    if (qty > 0) {
-                        totalQty += qty;
-                        totalPrice += qty * t.price;
-                        selectedHtml +=
-                            `<div class="flex justify-between"><span>${t.tipe} x ${qty}</span><span>${formatRupiah(qty * t.price)}</span></div>`;
-                    }
-                });
-
-                summaryItemsEl.textContent = totalQty;
-                summaryTotalEl.textContent = formatRupiah(totalPrice);
-                selectedListEl.innerHTML = selectedHtml || '<p class="text-gray-500">Belum ada tiket dipilih</p>';
-                checkoutButton.disabled = totalQty === 0;
-            }
-
-            // Wire up plus/minus buttons and manual input
-            document.querySelectorAll('[data-action="inc"]').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const id = e.currentTarget.dataset.id;
-                    const input = document.getElementById('qty-' + id)
-                    const info = tickets[id];
-                    if (!input || !info) return;
-                    let val = Number(input.value || 0);
-                    if (val < info.stock) val++;
-                    input.value = val;
-                    updateTicketSubtotal(id);
-                    updateSummary();
-                });
-            });
-
-            document.querySelectorAll('[data-action="dec"]').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const id = e.currentTarget.dataset.id;
-                    const input = document.getElementById('qty-' + id);
-                    if (!input) return;
-                    let val = Number(input.value || 0);
-                    if (val > 0) val--;
-                    input.value = val;
-                    updateTicketSubtotal(id);
-                    updateSummary();
-                });
-            });
-
-            document.querySelectorAll('input[id^="qty-"]').forEach(input => {
-                input.addEventListener('change', (e) => {
-                    const el = e.currentTarget;
-                    const id = el.dataset.id;
-                    const info = tickets[id];
-                    let val = Number(el.value || 0);
-                    if (val < 0) val = 0;
-                    if (val > info.stock) val = info.stock;
-                    el.value = val;
-                    updateTicketSubtotal(id);
-                    updateSummary();
-                });
-            });
-
-            function updateTicketSubtotal(id) {
-                const t = tickets[id];
-                const qty = Number(document.getElementById('qty-' + id).value || 0);
-                const subtotalEl = document.getElementById('subtotal-' + id);
-                if (subtotalEl) subtotalEl.textContent = formatRupiah(qty * t.price);
-            }
-
-            // Checkout modal
-            window.openCheckout = function() {
-                const modal = document.getElementById('checkout_modal');
-                // populate modal items
-                const modalItems = document.getElementById('modalItems');
-                const modalTotal = document.getElementById('modalTotal');
-
-                let itemsHtml = '';
-                let total = 0;
-                Object.values(tickets).forEach(t => {
-                    const qty = Number(document.getElementById('qty-' + t.id).value || 0);
-                    if (qty > 0) {
-                        itemsHtml +=
-                            `<div class="flex justify-between"><span>${t.tipe} x ${qty}</span><span>${formatRupiah(qty * t.price)}</span></div>`;
-                        total += qty * t.price;
-                    }
-                });
-
-                modalItems.innerHTML = itemsHtml || '<p class="text-gray-500">Belum ada item.</p>';
-                modalTotal.textContent = formatRupiah(total);
-
-                if (typeof modal.showModal === 'function') {
-                    modal.showModal();
-                } else {
-                    // fallback for older browsers
-                    modal.classList.add('modal-open');
-                }
-            }
-            document.getElementById('confirmCheckout').addEventListener('click', async () => {
-                const btn = document.getElementById('confirmCheckout');
-                btn.setAttribute('disabled', 'disabled');
-                btn.textContent = 'Memproses...';
-
-                // gather items
-                const items = [];
-                Object.values(tickets).forEach(t => {
-                    const qty = Number(document.getElementById('qty-' + t.id).value || 0);
-                    if (qty > 0) items.push({
-                        tiket_id: t.id,
-                        jumlah: qty
-                    });
-                });
-
-                if (items.length === 0) {
-                    alert('Tidak ada tiket dipilih');
-                    btn.removeAttribute('disabled');
-                    btn.textContent = 'Konfirmasi (placeholder)';
-                    return;
-                }
-
-                try {
-                    const res = await fetch("{{ route('orders.store') }}", {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                .getAttribute('content')
-                        },
-                        body: JSON.stringify({
-                            event_id: {{ $event->id }},
-                            items
-                        })
-                    });
-
-                    if (!res.ok) {
-                        const text = await res.text();
-                        throw new Error(text || 'Gagal membuat pesanan');
-                    }
-
-                    const data = await res.json();
-                    // redirect to orders list
-                    window.location.href = data.redirect || '{{ route('orders.index') }}';
-                } catch (err) {
-                    console.log(err);
-                    alert('Terjadi kesalahan saat memproses pesanan: ' + err.message);
-                    btn.removeAttribute('disabled');
-                    btn.textContent = 'Konfirmasi (placeholder)';
-                }
-            });
-            // init
-            updateSummary();
-        })();
-    </script>
+    </div>
 </x-layouts.app>

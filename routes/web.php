@@ -18,12 +18,17 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 // Event routes
 Route::get('/events/{event}', [UserEventController::class, 'show'])->name('events.show');
 
-// Order Routes
-Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
-Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
-
 Route::middleware('auth')->group(function () {
+    // Tujuan redirect bawaan Breeze (register, verifikasi email, konfirmasi password)
+    Route::get('/dashboard', fn() => auth()->user()->isAdmin()
+        ? redirect()->route('admin.dashboard')
+        : redirect()->route('home'))->name('dashboard');
+
+    // Order Routes (wajib login)
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

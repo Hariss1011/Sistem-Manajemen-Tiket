@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Gambar event belum tersedia">
+  <rect width="800" height="600" fill="#e8e6f2"/>
+  <path d="M250 190h300a30 30 0 0 1 30 30v40a40 40 0 0 0 0 80v40a30 30 0 0 1-30 30H250a30 30 0 0 1-30-30v-40a40 40 0 0 0 0-80v-40a30 30 0 0 1 30-30z" fill="#cfcbe6"/>
+  <path d="M520 205v190" stroke="#e8e6f2" stroke-width="6" stroke-dasharray="14 12"/>
+</svg>

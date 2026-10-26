@@ -3,50 +3,52 @@
 namespace Database\Seeders;
 
 use App\Models\DetailOrder;
+use App\Models\Event;
 use App\Models\Order;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class OrderSeeder extends Seeder
 {
     public function run(): void
     {
-        $orders = [
-            [
-                'user_id' => 2,
-                'event_id' => 1,
-                'order_date' => '2024-07-01 14:30:00',
-                'total_harga' => 1500000,
-            ],
-            [
-                'user_id' => 2,
-                'event_id' => 2,
-                'order_date' => '2024-07-02 10:15:00',
-                'total_harga' => 200000,
-            ],
+        $user = User::where('role', 'user')->firstOrFail();
+
+        // [judul event, hari lalu, [[urutan tiket di event, jumlah], ...]]
+        $pesanan = [
+            ['Konser Reuni Band Kampus', 25, [[0, 2]]],
+            ['Malam Rock Nusantara', 6, [[0, 1], [1, 2]]],
+            ['Workshop Laravel dari Nol sampai Deploy', 3, [[0, 1]]],
         ];
 
-        $order_details = [
-            [
-                'order_id' => 1,
-                'tiket_id' => 1,
-                'jumlah' => 1,
-                'subtotal_harga' => 1500000,
-            ],
-            [
-                'order_id' => 2,
-                'tiket_id' => 3,
-                'jumlah' => 1,
-                'subtotal_harga' => 200000,
-            ],
-        ];
+        foreach ($pesanan as [$judul, $hariLalu, $baris]) {
+            $event = Event::where('judul', $judul)->firstOrFail();
+            $tikets = $event->tikets()->orderBy('id')->get();
 
-        foreach ($orders as $order) {
-            Order::create($order);
-        }
+            $order = Order::create([
+                'user_id' => $user->id,
+                'event_id' => $event->id,
+                'order_date' => now()->subDays($hariLalu),
+                'total_harga' => 0,
+            ]);
 
-        foreach ($order_details as $detail) {
-            DetailOrder::create($detail);
+            $total = 0;
+            foreach ($baris as [$urutan, $jumlah]) {
+                $tiket = $tikets[$urutan];
+                $subtotal = $tiket->harga * $jumlah;
+                $total += $subtotal;
+
+                DetailOrder::create([
+                    'order_id' => $order->id,
+                    'tiket_id' => $tiket->id,
+                    'jumlah' => $jumlah,
+                    'subtotal_harga' => $subtotal,
+                ]);
+
+                $tiket->decrement('stok', $jumlah);
+            }
+
+            $order->update(['total_harga' => $total]);
         }
     }
 }

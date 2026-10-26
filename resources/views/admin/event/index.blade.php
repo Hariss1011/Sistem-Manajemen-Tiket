@@ -19,6 +19,7 @@
             <a href="{{ route('admin.events.create') }}" class="btn btn-primary ml-auto">Tambah Event</a>
         </div>
         <div class="overflow-x-auto rounded-box bg-white p-5 shadow-xs">
+            <th>{{ $histories->firstItem() + $index }}</th>
             <table class="table">
                 <thead>
                     <tr>
@@ -54,6 +55,7 @@
                     @endforelse
                 </tbody>
             </table>
+            <div class="mt-4">{{ $events->links() }}</div>
         </div>
     </div>
 

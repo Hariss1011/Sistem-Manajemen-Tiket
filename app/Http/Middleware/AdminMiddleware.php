@@ -10,12 +10,12 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && auth()->user()->role === 'admin') {
-            return $next($request);
+        if (! auth()->check()) {
+            return redirect()->guest(route('login'));
         }
 
-        // If not admin, log out the user
-        auth()->logout();
-        return redirect('/login');
+        abort_unless(auth()->user()->isAdmin(), 403, 'Halaman ini khusus admin.');
+
+        return $next($request);
     }
 }

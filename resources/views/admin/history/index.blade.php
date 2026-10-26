@@ -4,6 +4,7 @@
             <h1 class="text-3xl font-semibold mb-4">History Pembelian</h1>
         </div>
         <div class="overflow-x-auto rounded-box bg-white p-5 shadow-xs">
+            <th>{{ $histories->firstItem() + $index }}</th>
             <table class="table">
                 <thead>
                     <tr>
@@ -35,6 +36,7 @@
                     @endforelse
                 </tbody>
             </table>
+            <div class="mt-4">{{ $histories->links() }}</div>
         </div>
     </div>
 </x-layouts.admin>

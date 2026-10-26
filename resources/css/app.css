@@ -1,3 +1,131 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@plugin "@tailwindcss/forms";
+@plugin "daisyui" {
+    themes: false;
+}
+
+/* Tema BengTix: indigo tinta, merah muda stub, kertas putih kebiruan */
+@plugin "daisyui/theme" {
+    name: "bengtix";
+    default: true;
+    color-scheme: light;
+
+    --color-base-100: #ffffff;
+    --color-base-200: #f5f4fa;
+    --color-base-300: #e4e2f0;
+    --color-base-content: #14142b;
+
+    --color-primary: #1f2160;
+    --color-primary-content: #ffffff;
+    --color-secondary: #d62660;
+    --color-secondary-content: #ffffff;
+    --color-accent: #ffc83d;
+    --color-accent-content: #14142b;
+    --color-neutral: #14142b;
+    --color-neutral-content: #f5f4fa;
+
+    --color-info: #2563eb;
+    --color-info-content: #ffffff;
+    --color-success: #15803d;
+    --color-success-content: #ffffff;
+    --color-warning: #b45309;
+    --color-warning-content: #ffffff;
+    --color-error: #b91c1c;
+    --color-error-content: #ffffff;
+
+    --radius-selector: 9999px;
+    --radius-field: 0.625rem;
+    --radius-box: 1rem;
+    --size-selector: 0.25rem;
+    --size-field: 0.25rem;
+    --border: 1px;
+    --depth: 0;
+    --noise: 0;
+}
+
+@source "../views/**/*.blade.php";
+@source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
+
+@theme {
+    --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply bg-base-200 text-base-content antialiased;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-secondary);
+        outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        html {
+            scroll-behavior: auto;
+        }
+        * {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+}
+
+/*
+ * Bentuk tiket: potongan setengah lingkaran di sisi kiri dan kanan pada garis perforasi.
+ * --stub  = tinggi bagian stub (harga) dari bawah
+ * --notch = jari-jari potongan
+ * Bayangan dipasang di pembungkus (.ticket-wrap) karena mask juga memotong box-shadow.
+ */
+@layer components {
+    .ticket-wrap {
+        filter: drop-shadow(0 1px 1px rgb(20 20 43 / 0.06))
+            drop-shadow(0 6px 14px rgb(20 20 43 / 0.06));
+    }
+
+    .ticket {
+        --stub: 4.5rem;
+        --notch: 0.6rem;
+        --cut: calc(100% - var(--stub));
+        --hole: radial-gradient(
+            circle var(--notch) at 0 var(--cut),
+            #0000 calc(100% - 0.5px),
+            #000
+        );
+        --hole-r: radial-gradient(
+            circle var(--notch) at 100% var(--cut),
+            #0000 calc(100% - 0.5px),
+            #000
+        );
+
+        background: var(--color-base-100);
+        border-radius: var(--radius-box);
+        -webkit-mask:
+            var(--hole) left / 51% 100% no-repeat,
+            var(--hole-r) right / 51% 100% no-repeat;
+        mask:
+            var(--hole) left / 51% 100% no-repeat,
+            var(--hole-r) right / 51% 100% no-repeat;
+    }
+
+    .ticket-stub {
+        height: var(--stub);
+        background-image: linear-gradient(
+            to right,
+            var(--color-base-300) 55%,
+            transparent 0
+        );
+        background-size: 10px 1.5px;
+        background-repeat: repeat-x;
+        background-position: 0 0;
+    }
+}
+
+[x-cloak] {
+    display: none !important;
+}

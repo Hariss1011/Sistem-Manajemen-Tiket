@@ -22,3 +22,7 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+# Gambar event hasil upload admin (tidak perlu masuk repo)
+/public/images/events/*
+!/public/images/events/.gitkeep
+!/public/images/events/seed-*.svg

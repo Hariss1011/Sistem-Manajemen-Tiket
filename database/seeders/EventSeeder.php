@@ -3,44 +3,97 @@
 namespace Database\Seeders;
 
 use App\Models\Event;
+use App\Models\Kategori;
+use App\Models\Lokasi;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class EventSeeder extends Seeder
 {
     public function run(): void
     {
+        $admin = User::where('role', 'admin')->firstOrFail();
+        $kategori = Kategori::pluck('id', 'nama');
+        $lokasi = Lokasi::pluck('id', 'nama_lokasi');
+
         $events = [
             [
-                'user_id' => 1,
-                'judul' => 'Konser Musik Rock',
-                'deskripsi' => 'Nikmati malam penuh energi dengan band rock terkenal.',
-                'tanggal_waktu' => '2024-08-15 19:00:00',
-                'lokasi_id' => 1,
-                'kategori_id' => 1,
-                'gambar' => 'events/konser_rock.jpg',
+                'judul' => 'Malam Rock Nusantara',
+                'deskripsi' => 'Lima band rock lokal naik panggung dalam satu malam. Pintu dibuka pukul 17.00, area standing dan tribun tersedia.',
+                'tanggal_waktu' => now()->addDays(12)->setTime(19, 0),
+                'kategori' => 'Konser',
+                'lokasi' => 'Istora Senayan, Jakarta',
+                'seed' => 'rock',
             ],
             [
-                'user_id' => 1,
-                'judul' => 'Pameran Seni Kontemporer',
-                'deskripsi' => 'Jelajahi karya seni modern dari seniman lokal dan internasional.',
-                'tanggal_waktu' => '2024-09-10 10:00:00',
-                'lokasi_id' => 2,
-                'kategori_id' => 2,
-                'gambar' => 'events/pameran_seni.jpg',
+                'judul' => 'Jazz di Taman Budaya',
+                'deskripsi' => 'Konser jazz akustik di taman terbuka dengan penampil dari Bali dan Yogyakarta. Bawa alas duduk sendiri.',
+                'tanggal_waktu' => now()->addDays(26)->setTime(18, 30),
+                'kategori' => 'Konser',
+                'lokasi' => 'Taman Budaya, Denpasar',
+                'seed' => 'jazz',
             ],
             [
-                'user_id' => 1,
-                'judul' => 'Festival Makanan Internasional',
-                'deskripsi' => 'Cicipi berbagai hidangan lezat dari seluruh dunia.',
-                'tanggal_waktu' => '2024-10-05 12:00:00',
-                'lokasi_id' => 3,
-                'kategori_id' => 3,
-                'gambar' => 'events/festival_makanan.jpg',
+                'judul' => 'Seminar Karier Software Engineer',
+                'deskripsi' => 'Praktisi dari startup dan perusahaan teknologi berbagi cara menyusun portofolio, lolos wawancara teknis, dan memilih jalur karier.',
+                'tanggal_waktu' => now()->addDays(9)->setTime(9, 0),
+                'kategori' => 'Seminar',
+                'lokasi' => 'Gedung Sabuga, Bandung',
+                'seed' => 'career',
+            ],
+            [
+                'judul' => 'Seminar Data & AI untuk Bisnis Lokal',
+                'deskripsi' => 'Studi kasus penerapan analitik data dan AI di UMKM, lengkap dengan sesi tanya jawab bersama pembicara.',
+                'tanggal_waktu' => now()->addDays(40)->setTime(10, 0),
+                'kategori' => 'Seminar',
+                'lokasi' => 'Grand City Convex, Surabaya',
+                'seed' => 'data',
+            ],
+            [
+                'judul' => 'Workshop Laravel dari Nol sampai Deploy',
+                'deskripsi' => 'Bangun aplikasi tiketing sederhana selama satu hari penuh. Peserta membawa laptop sendiri, materi dan sertifikat disediakan.',
+                'tanggal_waktu' => now()->addDays(18)->setTime(9, 30),
+                'kategori' => 'Workshop',
+                'lokasi' => 'Grha Sabha Pramana, Yogyakarta',
+                'seed' => 'laravel',
+            ],
+            [
+                'judul' => 'Workshop UI Design dengan Figma',
+                'deskripsi' => 'Latihan membuat desain aplikasi mobile dari wireframe sampai prototipe interaktif, dipandu desainer produk berpengalaman.',
+                'tanggal_waktu' => now()->addDays(5)->setTime(13, 0),
+                'kategori' => 'Workshop',
+                'lokasi' => 'Gedung Sabuga, Bandung',
+                'seed' => 'figma',
+            ],
+            [
+                'judul' => 'Festival Akustik Pantai',
+                'deskripsi' => 'Festival musik akustik sore hari dengan panggung menghadap laut. Tiket terbatas.',
+                'tanggal_waktu' => now()->addDays(55)->setTime(15, 0),
+                'kategori' => 'Konser',
+                'lokasi' => 'Taman Budaya, Denpasar',
+                'seed' => 'beach',
+            ],
+            [
+                // Event yang sudah lewat, untuk menguji tampilan "Selesai".
+                'judul' => 'Konser Reuni Band Kampus',
+                'deskripsi' => 'Reuni band kampus lintas angkatan. Event ini sudah selesai.',
+                'tanggal_waktu' => now()->subDays(20)->setTime(19, 0),
+                'kategori' => 'Konser',
+                'lokasi' => 'Istora Senayan, Jakarta',
+                'seed' => 'reunion',
             ],
         ];
 
-        foreach ($events as $event) {
-            Event::create($event);
+        foreach ($events as $e) {
+            Event::create([
+                'user_id' => $admin->id,
+                'judul' => $e['judul'],
+                'deskripsi' => $e['deskripsi'],
+                'tanggal_waktu' => $e['tanggal_waktu'],
+                'kategori_id' => $kategori[$e['kategori']],
+                'lokasi_id' => $lokasi[$e['lokasi']],
+                'gambar' => "seed-{$e['seed']}.svg",
+            ]);
         }
     }
 }

@@ -6,10 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Event;
 use App\Models\Kategori;
-use App\Models\tipeTiket;
+use App\Models\TipeTiket;
 use App\Models\Lokasi;
-
-
 
 class EventController extends Controller
 {
@@ -21,6 +19,7 @@ class EventController extends Controller
     public function index()
     {
         $events = Event::all();
+        $events = Event::with(['kategori', 'lokasi'])->latest()->paginate(10);
         return view('admin.event.index', compact('events'));
     }
 
@@ -45,12 +44,12 @@ class EventController extends Controller
             'tanggal_waktu' => 'required|date',
             'lokasi_id' => 'required|exists:lokasis,id',
             'kategori_id' => 'required|exists:kategoris,id',
-            'gambar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'gambar' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
         // Handle file upload
         if ($request->hasFile('gambar')) {
-            $imageName = time() . '.' . $request->gambar->extension();
+            $imageName = \Illuminate\Support\Str::uuid() . '.' . $request->gambar->extension();
             $request->gambar->move(public_path('images/events'), $imageName);
             $validatedData['gambar'] = $imageName;
         }
@@ -65,17 +64,11 @@ class EventController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Event $event)
     {
-        $event = Event::findOrFail($id);
-        $categories = Kategori::all();
-        $lokasis = Lokasi::all();
-        $tickets = $event->tikets;
-        $tickets = $event->tikets()->with('tipeTiket')->get();
+        $event->load(['tikets.tipeTiket', 'kategori', 'lokasi', 'user']);
 
-        $tipeTikets = tipeTiket::all();
-
-        return view('admin.event.show', compact('event', 'categories', 'lokasis', 'tickets', 'tipeTikets'));
+        return view('events.show', compact('event'));
     }
 
     /**
@@ -103,12 +96,12 @@ class EventController extends Controller
                 'tanggal_waktu' => 'required|date',
                 'lokasi_id' => 'required|exists:lokasis,id',
                 'kategori_id' => 'required|exists:kategoris,id',
-                'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'gambar' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
             ]);
 
             // Handle file upload
             if ($request->hasFile('gambar')) {
-                $imageName = time() . '.' . $request->gambar->extension();
+                $imageName = \Illuminate\Support\Str::uuid() . '.' . $request->gambar->extension();
                 $request->gambar->move(public_path('images/events'), $imageName);
                 $validatedData['gambar'] = $imageName;
             }

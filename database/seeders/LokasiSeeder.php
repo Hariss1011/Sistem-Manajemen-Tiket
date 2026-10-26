@@ -13,14 +13,16 @@ class LokasiSeeder extends Seeder
      */
     public function run(): void
     {
-        $Lokasis = [
-            ['nama_lokasi' => 'Konser'],
-            ['nama_lokasi' => 'Seminar'],
-            ['nama_lokasi' => 'Workshop'],
+        $lokasis = [
+            'Istora Senayan, Jakarta',
+            'Gedung Sabuga, Bandung',
+            'Grha Sabha Pramana, Yogyakarta',
+            'Grand City Convex, Surabaya',
+            'Taman Budaya, Denpasar',
         ];
 
-        foreach ($Lokasis as $lokasi) {
-            Lokasi::create(['nama_lokasi' => $lokasi['nama_lokasi']]);
+        foreach ($lokasis as $nama) {
+            Lokasi::create(['nama_lokasi' => $nama]);
         }
     }
 }
