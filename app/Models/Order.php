@@ -4,15 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
     use HasFactory;
-
-    protected $casts = [
-        'total_harga' => 'decimal:2',
-        'order_date' => 'datetime',
-    ];
 
     protected $fillable = [
         'user_id',
@@ -21,24 +19,40 @@ class Order extends Model
         'total_harga',
     ];
 
-    public function user()
+    protected function casts(): array
     {
-        return $this->belongsTo(User::class);
+        return [
+            'order_date' => 'datetime',
+            'total_harga' => 'decimal:2',
+        ];
     }
 
-    public function tikets()
+    public function user(): BelongsTo
     {
-        return $this->belongsToMany(Tiket::class, 'detail_orders')
-            ->withPivot('jumlah', 'subtotal_harga');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function event()
+    public function event(): BelongsTo
     {
-        return $this->belongsTo(Event::class, 'event_id')->withTrashed();
+        return $this->belongsTo(Event::class, 'event_id')
+            ->withTrashed();
     }
 
-    public function detailOrders()
+    public function detailOrders(): HasMany
     {
-        return $this->hasMany(DetailOrder::class);
+        return $this->hasMany(DetailOrder::class, 'order_id');
+    }
+
+    public function tikets(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Tiket::class,
+            'detail_orders',
+            'order_id',
+            'tiket_id'
+        )->withPivot([
+            'jumlah',
+            'subtotal_harga',
+        ])->withTimestamps();
     }
 }

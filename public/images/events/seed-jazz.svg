@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="900" height="600" preserveAspectRatio="xMidYMid slice">
+  <rect width="900" height="600" fill="#0f3d3e"/>
+  <path d="M-20 90 C 150 20, 300 160, 450 90 S 750 20, 920 90" fill="none" stroke="#f6e8c3" stroke-width="4" opacity="0.9"/>
+  <path d="M-20 145 C 150 75, 300 215, 450 145 S 750 75, 920 145" fill="none" stroke="#f4a259" stroke-width="10" opacity="0.9"/>
+  <path d="M-20 200 C 150 130, 300 270, 450 200 S 750 130, 920 200" fill="none" stroke="#f4a259" stroke-width="10" opacity="0.9"/>
+  <path d="M-20 255 C 150 185, 300 325, 450 255 S 750 185, 920 255" fill="none" stroke="#f6e8c3" stroke-width="4" opacity="0.9"/>
+  <path d="M-20 310 C 150 240, 300 380, 450 310 S 750 240, 920 310" fill="none" stroke="#f4a259" stroke-width="10" opacity="0.9"/>
+  <path d="M-20 365 C 150 295, 300 435, 450 365 S 750 295, 920 365" fill="none" stroke="#f4a259" stroke-width="10" opacity="0.9"/>
+  <path d="M-20 420 C 150 350, 300 490, 450 420 S 750 350, 920 420" fill="none" stroke="#f6e8c3" stroke-width="4" opacity="0.9"/>
+  <path d="M-20 475 C 150 405, 300 545, 450 475 S 750 405, 920 475" fill="none" stroke="#f4a259" stroke-width="10" opacity="0.9"/>
+  <path d="M-20 530 C 150 460, 300 600, 450 530 S 750 460, 920 530" fill="none" stroke="#f4a259" stroke-width="10" opacity="0.9"/>
+</svg>

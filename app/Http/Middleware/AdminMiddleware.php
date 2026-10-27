@@ -8,13 +8,16 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AdminMiddleware
 {
+    /**
+     * Handle an incoming request.
+     */
     public function handle(Request $request, Closure $next): Response
     {
-        if (! auth()->check()) {
-            return redirect()->guest(route('login'));
-        }
-
-        abort_unless(auth()->user()->isAdmin(), 403, 'Halaman ini khusus admin.');
+        abort_unless(
+            $request->user()?->isAdmin(),
+            403,
+            'Halaman ini khusus admin.'
+        );
 
         return $next($request);
     }

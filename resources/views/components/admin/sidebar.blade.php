@@ -1,114 +1,199 @@
-<div class="drawer-side is-drawer-close:overflow-visible ">
-    <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
-    <div class="flex min-h-full flex-col items-start bg-base-200 w-64 is-drawer-close:w-14 is-drawer-open:w-80">
-        <div class="w-full flex items-center justify-center p-4">
-            <a href="{{ route('home') }}" aria-label="Lihat situs BengTix"><x-brand
-                    class="is-drawer-close:[&>span]:hidden" /></a>
+<div class="drawer-side z-40">
+    <label for="my-drawer-4" aria-label="Tutup sidebar" class="drawer-overlay"></label>
+
+    <aside
+        class="flex min-h-full w-72 flex-col border-r border-white/10 bg-[#101828] text-slate-300 shadow-2xl shadow-slate-950/10">
+
+        {{-- Brand --}}
+        <div class="border-b border-white/8 px-5 py-6">
+            <a href="{{ route('home') }}" aria-label="BengTix, kembali ke situs"
+                class="group flex items-center gap-3 rounded-xl">
+                <span
+                    class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-950/30 transition group-hover:bg-blue-500">
+                    <svg viewBox="0 0 32 32" fill="none" class="size-6" aria-hidden="true">
+                        <path
+                            d="M6 6.5h20a2 2 0 0 1 2 2v4a3.5 3.5 0 0 0 0 7v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4a3.5 3.5 0 0 0 0-7v-4a2 2 0 0 1 2-2Z"
+                            fill="currentColor" />
+                        <path d="M19.5 10v12" stroke="#93C5FD" stroke-width="2" stroke-linecap="round"
+                            stroke-dasharray="1 3.5" />
+                    </svg>
+                </span>
+
+                <span class="min-w-0">
+                    <span class="block text-xl font-extrabold tracking-tight text-white">
+                        Beng<span class="text-blue-400">Tix</span>
+                    </span>
+                    <span class="mt-1 block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                        Ticket Management
+                    </span>
+                </span>
+            </a>
         </div>
 
-        <!-- Sidebar content here -->
-        <ul class="menu w-full grow gap-1">
-            <!-- Dashboard Item -->
-            <li class="{{ request()->routeIs('admin.dashboard') ? 'bg-gray-200 rounded-lg' : '' }}">
-                <a href="{{ route('admin.dashboard') }}" class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
-                    data-tip="Dashboard">
-                    <!-- Home icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                        <path fill="currentColor"
-                            d="M6 19h3v-5q0-.425.288-.712T10 13h4q.425 0 .713.288T15 14v5h3v-9l-6-4.5L6 10zm-2 0v-9q0-.475.213-.9t.587-.7l6-4.5q.525-.4 1.2-.4t1.2.4l6 4.5q.375.275.588.7T20 10v9q0 .825-.588 1.413T18 21h-4q-.425 0-.712-.288T13 20v-5h-2v5q0 .425-.288.713T10 21H6q-.825 0-1.412-.587T4 19m8-6.75" />
-                    </svg>
-                    <span class="is-drawer-close:hidden">Dashboard</span>
-                </a>
-            </li>
+        {{-- Navigation --}}
+        <nav aria-label="Navigasi admin" class="flex-1 px-3 py-6">
+            <p class="mb-3 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                Menu utama
+            </p>
 
-            <!-- Kategori item -->
-            <li class="{{ request()->routeIs('admin.categories.*') ? 'bg-gray-200 rounded-lg' : '' }}">
-                <a href="{{ route('admin.categories.index') }}"
-                    class="is-drawer-close:tooltip is-drawer-close:tooltip-right" data-tip="Kategori">
-                    <!-- icon Kategori -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 3a3 3 0 1 0 6 0a3 3 0 1 0-6 0" />
-                    </svg>
-                    <span class="is-drawer-close:hidden">Manajemen Kategori</span>
-                </a>
-            </li>
+            <ul class="space-y-1.5">
 
-            <!-- Tipe Tiket item -->
-            <li class="{{ request()->routeIs('admin.tipe_tiket.*') ? 'bg-gray-200 rounded-lg' : '' }}">
-                <a href="{{ route('admin.tipe_tiket.index') }}"
-                    class="is-drawer-close:tooltip is-drawer-close:tooltip-right" data-tip="TipeTiket">
-                    <!-- icon Tipe Tiket -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 3a3 3 0 1 0 6 0a3 3 0 1 0-6 0" />
-                    </svg>
-                    <span class="is-drawer-close:hidden">Manajemen Tipe Tiket</span>
-                </a>
-            </li>
+                {{-- Dashboard --}}
+                <li>
+                    <a href="{{ route('admin.dashboard') }}"
+                        @if (request()->routeIs('admin.dashboard')) aria-current="page" @endif @class([
+                            'group flex min-h-11 items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition duration-200',
+                            'bg-blue-600 text-white shadow-lg shadow-blue-950/30' => request()->routeIs(
+                                'admin.dashboard'),
+                            'text-slate-400 hover:bg-white/[0.06] hover:text-white' => !request()->routeIs(
+                                'admin.dashboard'),
+                        ])>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round" class="size-5 shrink-0" aria-hidden="true">
+                            <rect x="3" y="3" width="7" height="9" rx="1.5" />
+                            <rect x="14" y="3" width="7" height="5" rx="1.5" />
+                            <rect x="14" y="12" width="7" height="9" rx="1.5" />
+                            <rect x="3" y="16" width="7" height="5" rx="1.5" />
+                        </svg>
+                        <span>Dashboard</span>
+                        @if (request()->routeIs('admin.dashboard'))
+                            <span class="ml-auto size-1.5 rounded-full bg-white"></span>
+                        @endif
+                    </a>
+                </li>
 
-            <!-- Lokasi item -->
-            <li class="{{ request()->routeIs('admin.lokasis.*') ? 'bg-gray-200 rounded-lg' : '' }}">
-                <a href="{{ route('admin.lokasis.index') }}"
-                    class="is-drawer-close:tooltip is-drawer-close:tooltip-right" data-tip="Event">
-                    <!-- icon Lokasi -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M15 5v2m0 4v2m0 4v2M5 5h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4V7a2 2 0 0 1 2-2" />
-                    </svg>
-                    <span class="is-drawer-close:hidden">Manajemen Lokasi</span>
-                </a>
-            </li>
+                {{-- Categories --}}
+                <li>
+                    <a href="{{ route('admin.categories.index') }}"
+                        @if (request()->routeIs('admin.categories.*')) aria-current="page" @endif @class([
+                            'group flex min-h-11 items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition duration-200',
+                            'bg-blue-600 text-white shadow-lg shadow-blue-950/30' => request()->routeIs(
+                                'admin.categories.*'),
+                            'text-slate-400 hover:bg-white/[0.06] hover:text-white' => !request()->routeIs(
+                                'admin.categories.*'),
+                        ])>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round" class="size-5 shrink-0" aria-hidden="true">
+                            <rect x="3" y="3" width="8" height="8" rx="2" />
+                            <rect x="13" y="3" width="8" height="5" rx="2" />
+                            <rect x="13" y="10" width="8" height="11" rx="2" />
+                            <rect x="3" y="13" width="8" height="8" rx="2" />
+                        </svg>
+                        <span>Manajemen Kategori</span>
+                    </a>
+                </li>
 
+                {{-- Ticket types --}}
+                <li>
+                    <a href="{{ route('admin.tipe_tiket.index') }}"
+                        @if (request()->routeIs('admin.tipe_tiket.*')) aria-current="page" @endif @class([
+                            'group flex min-h-11 items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition duration-200',
+                            'bg-blue-600 text-white shadow-lg shadow-blue-950/30' => request()->routeIs(
+                                'admin.tipe_tiket.*'),
+                            'text-slate-400 hover:bg-white/[0.06] hover:text-white' => !request()->routeIs(
+                                'admin.tipe_tiket.*'),
+                        ])>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round" class="size-5 shrink-0" aria-hidden="true">
+                            <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v18H6.5A2.5 2.5 0 0 1 4 18.5v-13Z" />
+                            <path d="M4 6h16M9 3v3M9 21v-3" />
+                            <path d="M12 10h4M12 14h4" />
+                        </svg>
+                        <span>Manajemen Tipe Tiket</span>
+                    </a>
+                </li>
 
-            <!-- Event item -->
-            <li class="{{ request()->routeIs('admin.events.*') ? 'bg-gray-200 rounded-lg' : '' }}">
-                <a href="{{ route('admin.events.index') }}"
-                    class="is-drawer-close:tooltip is-drawer-close:tooltip-right" data-tip="Event">
-                    <!-- icon Event -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M15 5v2m0 4v2m0 4v2M5 5h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4V7a2 2 0 0 1 2-2" />
-                    </svg>
-                    <span class="is-drawer-close:hidden">Manajemen Event</span>
-                </a>
-            </li>
+                {{-- Locations --}}
+                <li>
+                    <a href="{{ route('admin.lokasis.index') }}"
+                        @if (request()->routeIs('admin.lokasis.*')) aria-current="page" @endif @class([
+                            'group flex min-h-11 items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition duration-200',
+                            'bg-blue-600 text-white shadow-lg shadow-blue-950/30' => request()->routeIs(
+                                'admin.lokasis.*'),
+                            'text-slate-400 hover:bg-white/[0.06] hover:text-white' => !request()->routeIs(
+                                'admin.lokasis.*'),
+                        ])>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round" class="size-5 shrink-0" aria-hidden="true">
+                            <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
+                            <circle cx="12" cy="10" r="2.5" />
+                        </svg>
+                        <span>Manajemen Lokasi</span>
+                    </a>
+                </li>
 
-            <!-- History item -->
-            <li class="{{ request()->routeIs('admin.histories.*') ? 'bg-gray-200 rounded-lg' : '' }}">
-                <a href="{{ route('admin.histories.index') }}"
-                    class="is-drawer-close:tooltip is-drawer-close:tooltip-right" data-tip="History">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    <span class="is-drawer-close:hidden">History Pembelian</span>
-                </a>
-            </li>
-        </ul>
+                {{-- Events --}}
+                <li>
+                    <a href="{{ route('admin.events.index') }}"
+                        @if (request()->routeIs('admin.events.*')) aria-current="page" @endif @class([
+                            'group flex min-h-11 items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition duration-200',
+                            'bg-blue-600 text-white shadow-lg shadow-blue-950/30' => request()->routeIs(
+                                'admin.events.*'),
+                            'text-slate-400 hover:bg-white/[0.06] hover:text-white' => !request()->routeIs(
+                                'admin.events.*'),
+                        ])>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round" class="size-5 shrink-0" aria-hidden="true">
+                            <rect x="3" y="5" width="18" height="16" rx="2" />
+                            <path d="M16 3v4M8 3v4M3 10h18" />
+                            <path d="m9 15 2 2 4-4" />
+                        </svg>
+                        <span>Manajemen Event</span>
+                    </a>
+                </li>
 
-        <!-- logout -->
-        <div class="w-full p-4">
+                {{-- Purchase history --}}
+                <li>
+                    <a href="{{ route('admin.histories.index') }}"
+                        @if (request()->routeIs('admin.histories.*')) aria-current="page" @endif @class([
+                            'group flex min-h-11 items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition duration-200',
+                            'bg-blue-600 text-white shadow-lg shadow-blue-950/30' => request()->routeIs(
+                                'admin.histories.*'),
+                            'text-slate-400 hover:bg-white/[0.06] hover:text-white' => !request()->routeIs(
+                                'admin.histories.*'),
+                        ])>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round" class="size-5 shrink-0"
+                            aria-hidden="true">
+                            <path d="M3 12a9 9 0 1 0 2.6-6.4L3 8" />
+                            <path d="M3 3v5h5" />
+                            <path d="M12 7v5l3 2" />
+                        </svg>
+                        <span>History Pembelian</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        {{-- Admin identity and logout --}}
+        <div class="mt-auto border-t border-white/8 p-4">
+            <div class="mb-3 flex items-center gap-3 rounded-xl border border-white/6 bg-white/4 p-3">
+                <span
+                    class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/15 text-sm font-extrabold text-blue-300 ring-1 ring-blue-400/20">
+                    A
+                </span>
+                <div class="min-w-0">
+                    <p class="truncate text-sm font-bold text-white">BengTix Admin</p>
+                    <p class="mt-0.5 text-xs text-slate-500">Pengelolaan platform</p>
+                </div>
+            </div>
+
             <form action="{{ route('logout') }}" method="POST">
                 @csrf
                 <button type="submit"
-                    class="btn btn-outline btn-error w-full is-drawer-close:tooltip is-drawer-close:tooltip-right"
-                    data-tip="Logout">
-                    <!-- Logout icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                        <path fill="currentColor"
-                            d="M10 17v-2h4v-2h-4v-2l-5 3l5 3m9-12H5q-.825 0-1.413.588T3 7v10q0 .825.587 1.413T5 19h14q.825 0 1.413-.587T21 17v-3h-2v3H5V7h14v3h2V7q0-.825-.587-1.413T19 5z" />
+                    class="flex min-h-11 w-full items-center gap-3 rounded-xl border border-rose-400/15 px-3.5 py-3 text-sm font-semibold text-rose-300 transition duration-200 hover:border-rose-400/30 hover:bg-rose-500/10 hover:text-rose-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                        stroke-linecap="round" stroke-linejoin="round" class="size-5 shrink-0" aria-hidden="true">
+                        <path d="M10 17l5-5-5-5M15 12H3" />
+                        <path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6" />
                     </svg>
-                    <span class="is-drawer-close:hidden">Logout</span>
+                    <span>Keluar dari akun</span>
                 </button>
-                <div class="w-full p-4 is-drawer-close:p-1.5"></div>
             </form>
+
+            <p class="pt-4 text-center text-[10px] font-medium tracking-wide text-slate-600">
+                BENGTIX &copy; {{ now()->year }}
+            </p>
         </div>
-    </div>
+    </aside>
 </div>

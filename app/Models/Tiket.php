@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Tiket extends Model
 {
@@ -16,24 +19,39 @@ class Tiket extends Model
         'stok',
     ];
 
-    public function event()
+    protected function casts(): array
     {
-        return $this->belongsTo(Event::class);
+        return [
+            'harga' => 'decimal:2',
+            'stok' => 'integer',
+        ];
     }
 
-    public function detailOrders()
+    public function event(): BelongsTo
     {
-        return $this->hasMany(DetailOrder::class);
+        return $this->belongsTo(Event::class, 'event_id');
     }
 
-    public function tipeTiket()
+    public function tipeTiket(): BelongsTo
     {
-        return $this->belongsTo(TipeTiket::class, 'tipe_tiket_id',);
+        return $this->belongsTo(TipeTiket::class, 'tipe_tiket_id');
     }
 
-    public function orders()
+    public function detailOrders(): HasMany
     {
-        return $this->belongsToMany(Order::class, 'detail_orders')
-            ->withPivot('jumlah', 'subtotal_harga');
+        return $this->hasMany(DetailOrder::class, 'tiket_id');
+    }
+
+    public function orders(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Order::class,
+            'detail_orders',
+            'tiket_id',
+            'order_id'
+        )->withPivot([
+            'jumlah',
+            'subtotal_harga',
+        ])->withTimestamps();
     }
 }

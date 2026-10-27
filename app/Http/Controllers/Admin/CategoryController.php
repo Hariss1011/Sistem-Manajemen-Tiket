@@ -3,91 +3,132 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Kategori;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Menampilkan daftar kategori.
      */
     public function index()
     {
-        $categories = Kategori::all();
+        $categories = Kategori::query()
+            ->withCount('events')
+            ->orderBy('nama')
+            ->get();
+
         return view('admin.category.index', compact('categories'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Form kategori menggunakan modal pada halaman index.
      */
     public function create()
     {
-        //
+        return redirect()->route('admin.categories.index');
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Menyimpan kategori baru.
      */
     public function store(Request $request)
     {
-        $payload = $request->validate([
-            'nama' => 'required|string|max:255',
+        $validated = $request->validate([
+            'nama' => [
+                'required',
+                'string',
+                'max:255',
+                'unique:kategoris,nama',
+            ],
+        ], [
+            'nama.required' => 'Nama kategori wajib diisi.',
+            'nama.string' => 'Nama kategori harus berupa teks.',
+            'nama.max' => 'Nama kategori maksimal 255 karakter.',
+            'nama.unique' => 'Nama kategori tersebut sudah digunakan.',
         ]);
 
-        if (!isset($payload['nama'])) {
-            return redirect()->route('categories.index')->with('error', 'Nama kategori wajib diisi.');
-        }
+        $validated['nama'] = trim($validated['nama']);
 
-        Kategori::create([
-            'nama' => $payload['nama'],
-        ]);
+        Kategori::create($validated);
 
-        return redirect()->route('admin.categories.index')->with('success', 'Kategori berhasil ditambahkan.');
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('success', 'Kategori berhasil ditambahkan.');
     }
 
-
     /**
-     * Display the specified resource.
+     * Detail kategori ditampilkan melalui halaman index.
      */
     public function show(string $id)
     {
-        //
+        Kategori::findOrFail($id);
+
+        return redirect()->route('admin.categories.index');
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Form edit kategori menggunakan modal pada halaman index.
      */
     public function edit(string $id)
     {
-        //
+        Kategori::findOrFail($id);
+
+        return redirect()->route('admin.categories.index');
     }
 
     /**
-     * Update the specified resource in storage.
+     * Memperbarui kategori.
      */
     public function update(Request $request, string $id)
     {
-        $payload = $request->validate([
-            'nama' => 'required|string|max:255',
+        $category = Kategori::findOrFail($id);
+
+        $validated = $request->validate([
+            'nama' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('kategoris', 'nama')
+                    ->ignore($category->id),
+            ],
+        ], [
+            'nama.required' => 'Nama kategori wajib diisi.',
+            'nama.string' => 'Nama kategori harus berupa teks.',
+            'nama.max' => 'Nama kategori maksimal 255 karakter.',
+            'nama.unique' => 'Nama kategori tersebut sudah digunakan.',
         ]);
 
-        if (!isset($payload['nama'])) {
-            return redirect()->route('categories.index')->with('error', 'Nama kategori wajib diisi.');
-        }
+        $validated['nama'] = trim($validated['nama']);
 
-        $category = Kategori::findOrFail($id);
-        $category->nama = $payload['nama'];
-        $category->save();
+        $category->update($validated);
 
-        return redirect()->route('admin.categories.index')->with('success', 'Kategori berhasil diperbarui.');
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('success', 'Kategori berhasil diperbarui.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Menghapus kategori jika belum digunakan oleh event.
      */
     public function destroy(string $id)
     {
-        Kategori::destroy($id);
-        return redirect()->route('admin.categories.index')->with('success', 'Kategori berhasil dihapus.');
+        $category = Kategori::findOrFail($id);
+
+        if ($category->events()->withTrashed()->exists()) {
+            return redirect()
+                ->route('admin.categories.index')
+                ->with(
+                    'error',
+                    'Kategori tidak dapat dihapus karena masih digunakan oleh event.'
+                );
+        }
+
+        $category->delete();
+
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('success', 'Kategori berhasil dihapus.');
     }
 }

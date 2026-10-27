@@ -3,22 +3,27 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Lokasi;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class LokasiController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Menampilkan daftar lokasi.
      */
     public function index()
     {
-        $Lokasis = Lokasi::all();
+        $Lokasis = Lokasi::query()
+            ->withCount('events')
+            ->orderBy('nama_lokasi')
+            ->get();
+
         return view('admin.lokasi.index', compact('Lokasis'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Menampilkan form tambah lokasi.
      */
     public function create()
     {
@@ -26,71 +31,112 @@ class LokasiController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Menyimpan lokasi baru.
      */
     public function store(Request $request)
     {
-        $payload = $request->validate([
-            'nama_lokasi' => 'required|string|max:255',
+        $request->merge([
+            'nama_lokasi' => trim(
+                (string) $request->input('nama_lokasi')
+            ),
         ]);
 
-        if (!isset($payload['nama_lokasi'])) {
-            return redirect()->route('lokasi.index')->with('error', 'Nama lokasi wajib diisi.');
-        }
-
-        Lokasi::create([
-            'nama_lokasi' => $payload['nama_lokasi'],
+        $validated = $request->validate([
+            'nama_lokasi' => [
+                'required',
+                'string',
+                'max:255',
+                'unique:lokasis,nama_lokasi',
+            ],
+        ], [
+            'nama_lokasi.required' => 'Nama lokasi wajib diisi.',
+            'nama_lokasi.string' => 'Nama lokasi harus berupa teks.',
+            'nama_lokasi.max' => 'Nama lokasi maksimal 255 karakter.',
+            'nama_lokasi.unique' => 'Nama lokasi tersebut sudah digunakan.',
         ]);
 
-        return redirect()->route('admin.lokasis.index')->with('success', 'Lokasi berhasil ditambahkan.');
+        Lokasi::create($validated);
+
+        return redirect()
+            ->route('admin.lokasis.index')
+            ->with('success', 'Lokasi berhasil ditambahkan.');
     }
 
     /**
-     * Display the specified resource.
+     * Detail lokasi saat ini diakses melalui halaman index.
      */
     public function show(string $id)
     {
-        //
+        Lokasi::findOrFail($id);
+
+        return redirect()->route('admin.lokasis.index');
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Menampilkan form edit lokasi.
      */
     public function edit(string $id)
     {
         $lokasi = Lokasi::findOrFail($id);
+
         return view('admin.lokasi.edit', compact('lokasi'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * Memperbarui lokasi.
      */
     public function update(Request $request, string $id)
     {
-        $payload = $request->validate([
-            'nama_lokasi' => 'required|string|max:255',
-        ]);
-
-        if (!isset($payload['nama_lokasi'])) {
-            return redirect()->route('lokasis.index')->with('error', 'Nama lokasi wajib diisi.');
-        }
-
         $lokasi = Lokasi::findOrFail($id);
-        $lokasi->update([
-            'nama_lokasi' => $payload['nama_lokasi'],
+
+        $request->merge([
+            'nama_lokasi' => trim(
+                (string) $request->input('nama_lokasi')
+            ),
         ]);
 
-        return redirect()->route('admin.lokasis.index')->with('success', 'Lokasi berhasil diperbarui.');
+        $validated = $request->validate([
+            'nama_lokasi' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('lokasis', 'nama_lokasi')
+                    ->ignore($lokasi->id),
+            ],
+        ], [
+            'nama_lokasi.required' => 'Nama lokasi wajib diisi.',
+            'nama_lokasi.string' => 'Nama lokasi harus berupa teks.',
+            'nama_lokasi.max' => 'Nama lokasi maksimal 255 karakter.',
+            'nama_lokasi.unique' => 'Nama lokasi tersebut sudah digunakan.',
+        ]);
+
+        $lokasi->update($validated);
+
+        return redirect()
+            ->route('admin.lokasis.index')
+            ->with('success', 'Lokasi berhasil diperbarui.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Menghapus lokasi jika tidak digunakan oleh event.
      */
     public function destroy(string $id)
     {
-        $lokasis = Lokasi::findOrFail($id);
-        $lokasis->delete();
+        $lokasi = Lokasi::findOrFail($id);
 
-        return redirect()->route('admin.lokasis.index')->with('success', 'Lokasi berhasil dihapus.');
+        if ($lokasi->events()->withTrashed()->exists()) {
+            return redirect()
+                ->route('admin.lokasis.index')
+                ->with(
+                    'error',
+                    'Lokasi tidak dapat dihapus karena masih digunakan oleh event.'
+                );
+        }
+
+        $lokasi->delete();
+
+        return redirect()
+            ->route('admin.lokasis.index')
+            ->with('success', 'Lokasi berhasil dihapus.');
     }
 }

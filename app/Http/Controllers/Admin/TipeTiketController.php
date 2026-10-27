@@ -3,81 +3,125 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\TipeTiket;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class TipeTiketController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Menampilkan daftar tipe tiket.
      */
     public function index()
     {
-        $tipeTikets = TipeTiket::all();
+        $tipeTikets = TipeTiket::query()
+            ->withCount('tikets')
+            ->orderBy('nama')
+            ->get();
+
         return view('admin.tipe_tiket.index', compact('tipeTikets'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Form tambah tipe tiket menggunakan modal pada halaman index.
      */
-    public function create() {}
+    public function create()
+    {
+        return redirect()->route('admin.tipe_tiket.index');
+    }
 
     /**
-     * Store a newly created resource in storage.
+     * Menyimpan tipe tiket baru.
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'nama' => 'required|string|max:255|unique:tipe_tikets,nama',
+        $validated = $request->validate([
+            'nama' => [
+                'required',
+                'string',
+                'max:255',
+                'unique:tipe_tikets,nama',
+            ],
+        ], [
+            'nama.required' => 'Nama tipe tiket wajib diisi.',
+            'nama.string' => 'Nama tipe tiket harus berupa teks.',
+            'nama.max' => 'Nama tipe tiket maksimal 255 karakter.',
+            'nama.unique' => 'Nama tipe tiket tersebut sudah digunakan.',
         ]);
 
-        TipeTiket::create($validatedData);
+        TipeTiket::create($validated);
 
-        return redirect()->route('admin.tipe_tiket.index')->with('success', 'Tipe tiket berhasil ditambahkan.');
+        return redirect()
+            ->route('admin.tipe_tiket.index')
+            ->with('success', 'Tipe tiket berhasil ditambahkan.');
     }
 
     /**
-     * Display the specified resource.
+     * Detail tipe tiket saat ini ditampilkan melalui halaman index.
      */
     public function show(string $id)
     {
-        //
+        TipeTiket::findOrFail($id);
+
+        return redirect()->route('admin.tipe_tiket.index');
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Form edit tipe tiket menggunakan modal pada halaman index.
      */
-    public function edit(string $id) {}
+    public function edit(string $id)
+    {
+        TipeTiket::findOrFail($id);
+
+        return redirect()->route('admin.tipe_tiket.index');
+    }
 
     /**
-     * Update the specified resource in storage.
+     * Memperbarui nama tipe tiket.
      */
-
     public function update(Request $request, string $id)
     {
-        $payload = $request->validate([
-            'nama' => 'required|string|max:255',
+        $tipeTiket = TipeTiket::findOrFail($id);
+
+        $validated = $request->validate([
+            'nama' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('tipe_tikets', 'nama')
+                    ->ignore($tipeTiket->id),
+            ],
+        ], [
+            'nama.required' => 'Nama tipe tiket wajib diisi.',
+            'nama.string' => 'Nama tipe tiket harus berupa teks.',
+            'nama.max' => 'Nama tipe tiket maksimal 255 karakter.',
+            'nama.unique' => 'Nama tipe tiket tersebut sudah digunakan.',
         ]);
 
-        if (!isset($payload['nama'])) {
-            return redirect()->route('admin.tipe_tiket.index')->with('error', 'Nama tipe tiket wajib diisi.');
-        }
+        $tipeTiket->update($validated);
 
-        $tipeTikets = TipeTiket::findOrFail($id);
-        $tipeTikets->nama = $payload['nama'];
-        $tipeTikets->save();
-
-        return redirect()->route('admin.tipe_tiket.index')->with('success', 'Tipe Tiket berhasil diperbarui.');
+        return redirect()
+            ->route('admin.tipe_tiket.index')
+            ->with('success', 'Tipe tiket berhasil diperbarui.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Menghapus tipe tiket yang belum digunakan oleh tiket mana pun.
      */
     public function destroy(string $id)
     {
-        $tipeTikets = TipeTiket::findOrFail($id);
-        $tipeTikets->delete();
+        $tipeTiket = TipeTiket::findOrFail($id);
 
-        return redirect()->route('admin.tipe_tiket.index')->with('success', 'Tipe tiket berhasil dihapus.');
+        if ($tipeTiket->tikets()->exists()) {
+            return redirect()
+                ->route('admin.tipe_tiket.index')
+                ->with('error', 'Tipe tiket tidak dapat dihapus karena masih digunakan oleh satu atau lebih tiket.');
+        }
+
+        $tipeTiket->delete();
+
+        return redirect()
+            ->route('admin.tipe_tiket.index')
+            ->with('success', 'Tipe tiket berhasil dihapus.');
     }
 }
