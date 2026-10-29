@@ -8,19 +8,19 @@ BengTix adalah aplikasi web untuk menjelajahi acara, melihat informasi dan pilih
 
 Menampilkan halaman utama BengTix sebagai platform pemesanan tiket acara.
 
-![Halaman Utama BengTix](docs/screenshot/homepage.png)
+![Halaman Utama BengTix](docs/screenshots/homepage.png)
 
 ### Detail Acara dan Pemilihan Tiket
 
 Menampilkan informasi acara, pilihan tiket, dan ringkasan pesanan sebelum melakukan pemesanan.
 
-![Detail Acara BengTix](docs/screenshot/detail-event.png)
+![Detail Acara BengTix](docs/screenshots/detail-event.png)
 
 ### Dashboard Admin
 
 Menampilkan dashboard administrasi untuk membantu pengelolaan dan pemantauan sistem BengTix.
 
-![Dashboard Admin BengTix](docs/screenshot/admin-dashboard.png)
+![Dashboard Admin BengTix](docs/screenshots/admin-dashboard.png)
 
 ## ✨ Fitur Utama
 
